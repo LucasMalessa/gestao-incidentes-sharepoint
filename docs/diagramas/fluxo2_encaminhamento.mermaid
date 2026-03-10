@@ -26,7 +26,7 @@ flowchart TD
 
     A1["⚡ Atualizar Item — Lista 1\nID: triggerOutputs()?['body/ID']\nStatus_Incidente → 'Encaminhado'\n⚠️ MANTER outros campos com dynamic content"]:::action
 
-    E1["📧 Enviar E-mail — Outlook\nPara: varEmailResponsavel\nCC: varEmailSolicitante;\n    lenon@empresa.com; bruna@empresa.com\nAssunto: [AÇÃO REQUERIDA] Incidente #ID – Title\nCorpo: Detalhes + varLinkIncidente +\n  varLinkListaAcoes + instruções"]:::email
+    E1["📧 Enviar E-mail — Outlook\nPara: varEmailResponsavel\nCC: varEmailSolicitante;\n    direcao@empresa.com\nAssunto: [AÇÃO REQUERIDA] Incidente #ID – Title\nCorpo: Detalhes + varLinkIncidente +\n  varLinkListaAcoes + instruções"]:::email
 
     CR["➕ Criar Item-Modelo — Lista 2\nLista: AcoesCorretivas\nID_Incidente_Ref: triggerOutputs()?['body/ID']\nDescricao_Acao: '[Descreva a ação corretiva]'\nTipo_Acao: 'Ação Corretiva'\nResponsavel_Acao: varEmailResponsavel\nStatus_Acao: 'Pendente'"]:::create
 

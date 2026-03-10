@@ -57,7 +57,7 @@ O formulário guia o gestor pelas seções de identificação, análise 5W2H, 5 
 
 ### E-mail de Notificação à Direção (Fluxo 1)
 
-Quando um incidente é criado, Lenon e Bruna recebem este e-mail automaticamente com todos os detalhes e link direto para designar o responsável.
+Quando um incidente é criado, a Direção recebe este e-mail automaticamente com todos os detalhes e link direto para designar o responsável.
 
 <p align="center">
   <img src="docs/img/mockup_email_notificacao.png" alt="E-mail de Notificação" width="600"><br>
@@ -316,8 +316,8 @@ gestao-incidentes-sharepoint/
 | Papel | Responsabilidade |
 |-------|-----------------|
 | **Gestores de Área** | Registram incidentes na Lista 1 |
-| **Gerente (Lenon)** | Recebe notificação, designa responsável |
-| **Diretora (Bruna)** | Recebe notificação, designa responsável |
+| **Gerente** | Recebe notificação, designa responsável |
+| **Diretor(a)** | Recebe notificação, designa responsável |
 | **Responsável Designado** | Cria e executa ações corretivas na Lista 2 |
 
 ---

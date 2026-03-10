@@ -21,7 +21,7 @@ flowchart TD
 
     A1["⚡ Atualizar Item — Lista 1\nUpdate item:\n  ID: triggerOutputs()?['body/ID']\n  Status_Incidente: Aguardando Diretor\n⚠️ Não alterar outros campos\n─────\n🔒 Após esta ação, Status != Aberto\n    Trigger Condition impede re-disparo"]:::action
 
-    E1["📧 Enviar E-mail — Outlook\nConector: Office 365 Outlook\nPara: lenon@empresa.com;\n      bruna@empresa.com\nAssunto: INCIDENTE varCriticidade\n  Title – Área Afetada\nCorpo HTML:\n  Título, Área, Criticidade,\n  Descrição, Registrado por,\n  varLinkItem\nImportância: if Alta então High"]:::email
+    E1["📧 Enviar E-mail — Outlook\nConector: Office 365 Outlook\nPara: direcao@empresa.com\nAssunto: INCIDENTE varCriticidade\n  Title – Área Afetada\nCorpo HTML:\n  Título, Área, Criticidade,\n  Descrição, Registrado por,\n  varLinkItem\nImportância: if Alta então High"]:::email
 
     C1{"🔀 varCriticidade\n= Alta ?"}:::condition
 

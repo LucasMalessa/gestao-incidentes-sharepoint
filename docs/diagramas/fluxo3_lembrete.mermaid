@@ -1,0 +1,48 @@
+---
+title: "FLUXO 3 – Lembrete de Prazo (Agendado)"
+---
+flowchart TD
+    classDef trigger fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef action fill:#D6E4F0,color:#1F4E79,stroke:#1F4E79
+    classDef variable fill:#FFF3E0,color:#E65100,stroke:#E65100
+    classDef condition fill:#FFF9C4,color:#5D4037,stroke:#F9A825,stroke-width:2px
+    classDef email fill:#E8F5E9,color:#2E7D32,stroke:#2E7D32
+    classDef loop fill:#F3E5F5,color:#6A1B9A,stroke:#6A1B9A
+    classDef endnode fill:#F5F5F5,color:#616161,stroke:#9E9E9E
+    classDef safe fill:#C8E6C9,color:#1B5E20,stroke:#2E7D32,font-weight:bold
+
+    SAFE["🛡️ RISCO DE LOOP: NENHUM\nTrigger agendado + apenas leitura"]:::safe
+
+    T["🔵 TRIGGER — Recurrence\nFrequência: Day | Intervalo: 1\nHorário: 08:00 BRT (UTC-3)\nDias: Seg a Sex"]:::trigger
+
+    V1["📦 Inicializar varHoje\nTipo: String\nValor: formatDateTime(utcNow(), 'yyyy-MM-dd')"]:::variable
+
+    V2["📦 Inicializar varLimite\nTipo: String\nValor: formatDateTime(\n  addDays(utcNow(), 2), 'yyyy-MM-dd')"]:::variable
+
+    V3["📦 Inicializar varAcoesAtrasadas\nTipo: Array\nValor: []"]:::variable
+
+    G1["⚡ Get Items — Lista 2\nLista: AcoesCorretivas\nFilter Query (OData):\nStatus_Acao ne 'Concluída'\n  and Prazo le 'varLimite'\nTop Count: 500"]:::action
+
+    C1{"🔀 Existem itens?\nlength(value) > 0 ?"}:::condition
+
+    NADA["✅ Terminate\nStatus: Succeeded\nMsg: 'Nenhuma ação próxima do prazo'"]:::endnode
+
+    LOOP["🔄 Apply to each — Ação encontrada"]:::loop
+
+    G2["⚡ Get Item — Lista 1\nID: items('Apply_to_each')?['ID_Incidente_Ref/Id']\n→ Obter Título do incidente"]:::action
+
+    C2{"🔀 Prazo < varHoje ?"}:::condition
+
+    S1["📦 varSituacao = '🔴 ATRASADA'"]:::variable
+    S2["📦 varSituacao = '🟡 VENCE EM BREVE'"]:::variable
+
+    E1["📧 Enviar E-mail — Individual\nPara: Responsavel_Acao (do item)\nCC: lenon@empresa.com; bruna@empresa.com\nAssunto: varSituacao Ação #ID_Acao –\n  Incidente: TituloIncidente\nCorpo: Descrição da ação, Prazo,\n  Status atual, Link para o item"]:::email
+
+    FIM["✅ Próximo item do loop\n(ou encerra se último)"]:::endnode
+
+    SAFE --> T --> V1 --> V2 --> V3 --> G1 --> C1
+    C1 -- "NÃO\n(0 itens)" --> NADA
+    C1 -- "SIM" --> LOOP --> G2 --> C2
+    C2 -- "SIM (atrasada)" --> S1 --> E1
+    C2 -- "NÃO (vence em breve)" --> S2 --> E1
+    E1 --> FIM

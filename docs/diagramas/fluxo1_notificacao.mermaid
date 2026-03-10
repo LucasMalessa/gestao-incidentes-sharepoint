@@ -1,0 +1,36 @@
+---
+title: "FLUXO 1 – Notificação à Direção (com proteção anti-loop)"
+---
+flowchart TD
+    classDef trigger fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef triggerCond fill:#C00000,color:#fff,stroke:#C00000,font-weight:bold
+    classDef action fill:#D6E4F0,color:#1F4E79,stroke:#1F4E79
+    classDef variable fill:#FFF3E0,color:#E65100,stroke:#E65100
+    classDef condition fill:#FFF9C4,color:#5D4037,stroke:#F9A825,stroke-width:2px
+    classDef email fill:#E8F5E9,color:#2E7D32,stroke:#2E7D32
+    classDef teams fill:#E3F2FD,color:#1565C0,stroke:#1565C0
+    classDef endnode fill:#F5F5F5,color:#616161,stroke:#9E9E9E
+
+    T["🔵 TRIGGER\nWhen an item is CREATED\nLista: Incidentes_CausaRaiz"]:::trigger
+
+    TC["🛡️ TRIGGER CONDITION — Settings\n@equals(\n  triggerOutputs()?['body/\n    Status_Incidente/Value'],\n  'Aberto'\n)\n───────────────────\nBloqueia: Re-disparo por polling\nBloqueia: Trigger trocado para\n  created or modified\nBloqueia: Qualquer re-execução\n  após Status != Aberto"]:::triggerCond
+
+    V1["📦 Inicializar varCriticidade\nTipo: String\nValor: triggerOutputs()?['body/Criticidade/Value']"]:::variable
+
+    V2["📦 Inicializar varLinkItem\nTipo: String\nValor: concat(\n  'https://tenant.sharepoint.com/\n  sites/[site]/Lists/\n  Incidentes_CausaRaiz/\n  DispForm.aspx?ID=',\n  triggerOutputs()? ['body/ID']\n)"]:::variable
+
+    A1["⚡ Atualizar Item — Lista 1\nUpdate item:\n  ID: triggerOutputs()?['body/ID']\n  Status_Incidente: Aguardando Diretor\n⚠️ Não alterar outros campos\n─────\n🔒 Após esta ação, Status != Aberto\n    Trigger Condition impede re-disparo"]:::action
+
+    E1["📧 Enviar E-mail — Outlook\nConector: Office 365 Outlook\nPara: lenon@empresa.com;\n      bruna@empresa.com\nAssunto: INCIDENTE varCriticidade\n  Title – Área Afetada\nCorpo HTML:\n  Título, Área, Criticidade,\n  Descrição, Registrado por,\n  varLinkItem\nImportância: if Alta então High"]:::email
+
+    C1{"🔀 varCriticidade\n= Alta ?"}:::condition
+
+    TM["📢 Post Message — Teams\nConector: Microsoft Teams\nCanal: Incidentes ou Gerência\nMensagem:\n  🚨 Incidente CRÍTICO registrado:\n  Title - Área - varLinkItem"]:::teams
+
+    FIM["✅ Fluxo encerra"]:::endnode
+
+    T --> TC
+    TC -->|"Status = Aberto\núnico cenário válido"| V1
+    V1 --> V2 --> A1 --> E1 --> C1
+    C1 -- "SIM" --> TM --> FIM
+    C1 -- "NÃO" --> FIM

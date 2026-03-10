@@ -1,0 +1,52 @@
+---
+title: "VISÃO GERAL – Interação entre Fluxos + Proteções Anti-Loop"
+---
+flowchart LR
+    classDef lista fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef fluxo fill:#D6E4F0,color:#1F4E79,stroke:#1F4E79,font-weight:bold
+    classDef ator fill:#E8F5E9,color:#2E7D32,stroke:#2E7D32,font-weight:bold
+    classDef block fill:#FFCDD2,color:#B71C1C,stroke:#C00000,stroke-dasharray:5 5
+    classDef status fill:#FFF9C4,color:#5D4037,stroke:#F9A825
+
+    subgraph LISTAS["📋 LISTAS SHAREPOINT"]
+        L1["Lista 1\nIncidentes +\nCausa Raiz"]:::lista
+        L2["Lista 2\nAções\nCorretivas"]:::lista
+    end
+
+    subgraph ATORES["👥 ATORES"]
+        GESTOR["Gestor\nregistra incidente"]:::ator
+        DIRECAO["Direção\nLenon / Bruna\ndesigna responsável"]:::ator
+        RESP["Responsável\nregistra ações\ne solução"]:::ator
+    end
+
+    subgraph FLUXOS["⚡ FLUXOS POWER AUTOMATE"]
+        F1["FLUXO 1\nNotificação\nà Direção"]:::fluxo
+        F2["FLUXO 2\nEncaminhamento\nao Responsável"]:::fluxo
+        F3["FLUXO 3\nLembrete\nde Prazo"]:::fluxo
+        F4["FLUXO 4\nConclusão\nAutomática"]:::fluxo
+    end
+
+    subgraph STATUS["📊 MÁQUINA DE ESTADOS unidirecional"]
+        S1["Aberto"]:::status
+        S2["Aguardando\nDiretor"]:::status
+        S3["Encaminhado"]:::status
+        S4["Concluído"]:::status
+        S1 -->|"F1"| S2 -->|"F2"| S3 -->|"F4"| S4
+    end
+
+    GESTOR -->|"Cria item"| L1
+    L1 -->|"Item criado\n+ TC: Status=Aberto"| F1
+    F1 -->|"Status Ag.Diretor\n+ E-mail"| DIRECAO
+    DIRECAO -->|"Preenche\nResponsavel"| L1
+    L1 -->|"Item modificado\n+ TC: Resp preenchido\nAND Status=Ag.Diretor"| F2
+    F2 -->|"Status Encaminhado\n+ E-mail + item-modelo"| L2
+    RESP -->|"Registra ações\n+ Resolução"| L2
+    L2 -->|"Status_Acao=Concluída\n+ TC"| F4
+    F4 -->|"Valida tudo\nStatus Concluído"| L1
+    F3 -->|"Lê prazos\nsem modificar"| L2
+
+    B0["🛡️ BLOQUEIO F1 auto-loop\nTC: Status=Aberto\nApós update Status != Aberto"]:::block
+    B1["🛡️ BLOQUEIO F1 para F2\nTC F2: Responsavel vazio\n= false na condição AND"]:::block
+    B2["🛡️ BLOQUEIO F2 auto-loop\nTC F2: Status=Encaminhado\n!= Aguardando Diretor"]:::block
+    B3["🛡️ BLOQUEIO F4 para F2\nTC F2: Status=Concluído\n!= Aguardando Diretor"]:::block
+    B4["🛡️ BLOQUEIO F4 auto-loop\nvarIncidenteJaConcluido\n= true então Terminate"]:::block

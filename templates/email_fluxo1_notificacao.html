@@ -1,0 +1,78 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     FLUXO 1 — E-mail de Notificação à Direção
+     Cole este HTML no corpo do "Send an email (V2)" do Power Automate
+     Substitua os campos @{...} pelas expressões dinâmicas correspondentes
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div style="font-family: Segoe UI, Arial, sans-serif; max-width: 640px; margin: 0 auto; background: #f5f5f5; padding: 20px;">
+  
+  <!-- Header -->
+  <div style="background: #0078D4; border-radius: 8px 8px 0 0; padding: 20px 24px;">
+    <h1 style="color: #fff; font-size: 20px; margin: 0;">⚠️ NOVO INCIDENTE REGISTRADO</h1>
+    <p style="color: #b3d7f2; font-size: 13px; margin: 6px 0 0;">Sistema de Gestão de Incidentes — Notificação Automática</p>
+  </div>
+
+  <!-- Body -->
+  <div style="background: #ffffff; padding: 24px; border: 1px solid #e1dfdd; border-top: none;">
+    
+    <p style="font-size: 14px; color: #323130;">Prezados <strong>Lenon</strong> e <strong>Bruna</strong>,</p>
+    <p style="font-size: 13px; color: #605e5c;">Um novo incidente foi registrado e aguarda a designação de um responsável.</p>
+
+    <!-- Tabela de detalhes -->
+    <table style="width: 100%; border-collapse: collapse; margin: 16px 0;" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" style="background: #004578; color: #fff; font-weight: bold; font-size: 13px; padding: 10px 12px; border-radius: 4px 4px 0 0;">
+          DETALHES DO INCIDENTE
+        </td>
+      </tr>
+      <tr style="background: #f3f2f1;">
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; width: 140px; border: 1px solid #e1dfdd;">Título</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/Title']}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Área Afetada</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/x00c1_rea_Afetada/Value']}</td>
+      </tr>
+      <tr style="background: #f3f2f1;">
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Criticidade</td>
+        <td style="padding: 8px 12px; color: @{if(equals(variables('varCriticidade'),'Alta'),'#d13438','#323130')}; font-weight: @{if(equals(variables('varCriticidade'),'Alta'),'bold','normal')}; font-size: 12px; border: 1px solid #e1dfdd;">
+          @{if(equals(variables('varCriticidade'),'Alta'),'🔴','')}&nbsp;@{variables('varCriticidade')}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Data da Ocorrência</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/Data_Ocorrencia']}</td>
+      </tr>
+      <tr style="background: #f3f2f1;">
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Descrição</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/Descricao_Incidente']}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Registrado por</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/Registrado_Por/DisplayName']}</td>
+      </tr>
+    </table>
+
+    <!-- CTA Button -->
+    <div style="text-align: center; margin: 20px 0;">
+      <a href="@{variables('varLinkItem')}" 
+         style="display: inline-block; background: #0078D4; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: bold; font-size: 14px;">
+        📋&nbsp; Abrir Incidente no SharePoint
+      </a>
+    </div>
+
+    <!-- Action required -->
+    <p style="font-size: 13px; color: #323130;"><strong>📌 Ação necessária:</strong></p>
+    <p style="font-size: 12px; color: #605e5c; margin-top: 4px;">
+      Acesse o item acima e preencha o campo <strong>Responsável Designado</strong> 
+      para encaminhar ao responsável pela resolução.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding: 12px 24px; border-top: 1px solid #e1dfdd; background: #fafafa; border-radius: 0 0 8px 8px;">
+    <p style="font-size: 11px; color: #a19f9d; margin: 0;">
+      E-mail gerado automaticamente pelo Power Automate — Fluxo 1 (Notificação à Direção)
+    </p>
+  </div>
+</div>

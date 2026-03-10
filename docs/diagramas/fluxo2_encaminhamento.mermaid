@@ -1,0 +1,38 @@
+---
+title: "FLUXO 2 – Encaminhamento ao Responsável (⚠️ Anti-Loop Crítico)"
+---
+flowchart TD
+    classDef trigger fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef triggerCond fill:#C00000,color:#fff,stroke:#C00000,font-weight:bold
+    classDef action fill:#D6E4F0,color:#1F4E79,stroke:#1F4E79
+    classDef variable fill:#FFF3E0,color:#E65100,stroke:#E65100
+    classDef email fill:#E8F5E9,color:#2E7D32,stroke:#2E7D32
+    classDef create fill:#E1BEE7,color:#6A1B9A,stroke:#6A1B9A
+    classDef endnode fill:#F5F5F5,color:#616161,stroke:#9E9E9E
+
+    T["🔵 TRIGGER\nWhen an item is MODIFIED\nLista: Incidentes_CausaRaiz"]:::trigger
+
+    TC["🛡️ TRIGGER CONDITION — Settings\n@and(\n  not(empty(triggerOutputs()?['body/\n    Responsavel_Designado/Claims'])),\n  equals(triggerOutputs()?['body/\n    Status_Incidente/Value'],\n    'Aguardando Diretor')\n)\n─────────────────────\nBloqueia: Fluxo 1 (sem responsável)\nBloqueia: Auto-loop (status ≠ Ag. Diretor)\nBloqueia: Fluxo 4 (status = Concluído)"]:::triggerCond
+
+    V1["📦 Inicializar varNomeResponsavel\nValor: triggerOutputs()?['body/\n  Responsavel_Designado/DisplayName']"]:::variable
+
+    V2["📦 Inicializar varEmailResponsavel\nValor: triggerOutputs()?['body/\n  Responsavel_Designado/Email']"]:::variable
+
+    V3["📦 Inicializar varEmailSolicitante\nValor: triggerOutputs()?['body/\n  Registrado_Por/Email']"]:::variable
+
+    V4["📦 Inicializar varLinkIncidente\nValor: concat(\n  'https://tenant.sharepoint.com/.../DispForm.aspx?ID=',\n  triggerOutputs()?['body/ID']\n)"]:::variable
+
+    V5["📦 Inicializar varLinkListaAcoes\nValor: concat(\n  'https://tenant.sharepoint.com/.../AllItems.aspx\n  ?FilterField1=ID_Incidente_Ref&FilterValue1=',\n  triggerOutputs()?['body/ID']\n)"]:::variable
+
+    A1["⚡ Atualizar Item — Lista 1\nID: triggerOutputs()?['body/ID']\nStatus_Incidente → 'Encaminhado'\n⚠️ MANTER outros campos com dynamic content"]:::action
+
+    E1["📧 Enviar E-mail — Outlook\nPara: varEmailResponsavel\nCC: varEmailSolicitante;\n    lenon@empresa.com; bruna@empresa.com\nAssunto: [AÇÃO REQUERIDA] Incidente #ID – Title\nCorpo: Detalhes + varLinkIncidente +\n  varLinkListaAcoes + instruções"]:::email
+
+    CR["➕ Criar Item-Modelo — Lista 2\nLista: AcoesCorretivas\nID_Incidente_Ref: triggerOutputs()?['body/ID']\nDescricao_Acao: '[Descreva a ação corretiva]'\nTipo_Acao: 'Ação Corretiva'\nResponsavel_Acao: varEmailResponsavel\nStatus_Acao: 'Pendente'"]:::create
+
+    FIM["✅ Fluxo encerra\n(Status = 'Encaminhado' impede re-disparo)"]:::endnode
+
+    T --> TC
+    TC -->|"Condição TRUE\n(único cenário válido:\nDireção preencheu responsável)"| V1
+    V1 --> V2 --> V3 --> V4 --> V5 --> A1
+    A1 --> E1 --> CR --> FIM

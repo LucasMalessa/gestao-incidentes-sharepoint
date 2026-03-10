@@ -1,0 +1,33 @@
+# Trigger Conditions — Referência Rápida
+# ══════════════════════════════════════════════════════════════
+# Cole cada expressão no campo Settings > Trigger Conditions do
+# respectivo fluxo no Power Automate.
+# ══════════════════════════════════════════════════════════════
+
+# ── FLUXO 1 — Notificação à Direção ────────────────────────
+# Trigger: When an item is created (Lista 1)
+# Garante que só roda se Status = "Aberto" (valor padrão).
+# Bloqueia re-disparo por polling ou trigger trocado.
+
+@equals(triggerOutputs()?['body/Status_Incidente/Value'], 'Aberto')
+
+
+# ── FLUXO 2 — Encaminhamento ao Responsável ────────────────
+# Trigger: When an item is modified (Lista 1)
+# Exige: Responsavel_Designado preenchido E Status = "Aguardando Diretor".
+# Bloqueia: auto-loop (F2), disparo por F1 (Resp vazio), disparo por F4 (Status ≠).
+
+@and(not(empty(triggerOutputs()?['body/Responsavel_Designado/Claims'])),equals(triggerOutputs()?['body/Status_Incidente/Value'], 'Aguardando Diretor'))
+
+
+# ── FLUXO 3 — Lembrete de Prazo ────────────────────────────
+# Trigger: Recurrence (diário)
+# Sem Trigger Condition — é agendado e somente leitura.
+
+
+# ── FLUXO 4 — Conclusão Automática ─────────────────────────
+# Trigger: When an item is modified (Lista 2)
+# Exige: Status_Acao = "Concluída".
+# Guarda adicional dentro do fluxo: varIncidenteJaConcluido.
+
+@equals(triggerOutputs()?['body/Status_Acao/Value'], 'Concluída')

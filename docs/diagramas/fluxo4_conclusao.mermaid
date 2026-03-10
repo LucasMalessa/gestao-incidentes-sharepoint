@@ -1,0 +1,87 @@
+---
+title: "FLUXO 4 – Conclusão Automática do Incidente"
+---
+flowchart TD
+    classDef trigger fill:#1F4E79,color:#fff,stroke:#1F4E79,font-weight:bold
+    classDef triggerCond fill:#C00000,color:#fff,stroke:#C00000,font-weight:bold
+    classDef action fill:#D6E4F0,color:#1F4E79,stroke:#1F4E79
+    classDef variable fill:#FFF3E0,color:#E65100,stroke:#E65100
+    classDef condition fill:#FFF9C4,color:#5D4037,stroke:#F9A825,stroke-width:2px
+    classDef guard fill:#FFEBEE,color:#C00000,stroke:#C00000,stroke-width:2px,font-weight:bold
+    classDef validation fill:#FFF3E0,color:#E65100,stroke:#E65100,stroke-width:2px,font-weight:bold
+    classDef email fill:#E8F5E9,color:#2E7D32,stroke:#2E7D32
+    classDef success fill:#C8E6C9,color:#1B5E20,stroke:#2E7D32,font-weight:bold
+    classDef cancel fill:#FFCDD2,color:#B71C1C,stroke:#C00000
+    classDef endnode fill:#F5F5F5,color:#616161,stroke:#9E9E9E
+
+    T["🔵 TRIGGER\nWhen an item is MODIFIED\nLista: AcoesCorretivas"]:::trigger
+
+    TC["🛡️ TRIGGER CONDITION — Settings\n@equals(\n  triggerOutputs()?['body/Status_Acao/Value'],\n  'Concluída'\n)\n───────────────────\nSó dispara quando Status_Acao = Concluída\nEdições em outros campos NÃO disparam"]:::triggerCond
+
+    V1["📦 Inicializar varIdIncidente\nTipo: Integer\nValor: triggerOutputs()?['body/\n  ID_Incidente_Ref/Id']"]:::variable
+
+    G1["⚡ Get Item — Lista 1\nLista: Incidentes_CausaRaiz\nID: varIdIncidente\n→ Obter Status_Incidente e Descricao_Solucao"]:::action
+
+    V2["📦 Inicializar varIncidenteJaConcluido\nTipo: Boolean\nValor: equals(\n  outputs('Get_Item')?['body/Status_Incidente/Value'],\n  'Concluído'\n)"]:::variable
+
+    GUARD{"🛡️ GUARDA ANTI-LOOP\nvarIncidenteJaConcluido\n= true ?"}:::guard
+
+    CANCEL1["❌ Terminate\nStatus: Cancelled\nMsg: 'Incidente já concluído.\nNenhuma ação necessária.'"]:::cancel
+
+    VAL1{"⚠️ VALIDAÇÃO 1\nempty(Resolucao_Acao)\n= true ?"}:::validation
+
+    EMAIL_VAL1["📧 E-mail de Alerta\nPara: Responsavel_Acao\nAssunto: ⚠️ Campo obrigatório\n  não preenchido – Ação #ID\nCorpo: 'O campo Resolucao_Acao é\nobrigatório para concluir a ação.'"]:::email
+
+    CANCEL2["❌ Terminate\nStatus: Cancelled\nMsg: 'Resolucao_Acao não preenchida'"]:::cancel
+
+    G2["⚡ Get Items — TODAS as ações\nLista: AcoesCorretivas\nFilter: ID_Incidente_Ref/Id eq varIdIncidente\nTop Count: 100"]:::action
+
+    V3["📦 varTotalAcoes\nTipo: Integer\nValor: length(value)"]:::variable
+
+    FA["⚡ Filter Array — Concluídas\nDe: resultado do Get Items\nCondição: Status_Acao = 'Concluída'\n─────\n📦 varAcoesConcluidas = length(resultado)"]:::action
+
+    FA2["⚡ Filter Array 2 — Sem Resolução\nDe: ações concluídas (filtro anterior)\nCondição: empty(Resolucao_Acao) = true\n─────\n📦 varResolucaoVazia = length > 0 ?"]:::action
+
+    VAL2{"⚠️ VALIDAÇÃO 2\nvarResolucaoVazia\n= true ?"}:::validation
+
+    CANCEL3["❌ Terminate — Cancelled\nMsg: 'Ações concluídas sem\nresolução preenchida'"]:::cancel
+
+    V4["📦 varTodasConcluidas\nTipo: Boolean\nValor: equals(\n  varTotalAcoes, varAcoesConcluidas)"]:::variable
+
+    DECISION{"🔀 DECISÃO FINAL\nvarTodasConcluidas\n= true ?"}:::condition
+
+    PARCIAL["✅ Terminate — Succeeded\nMsg: 'X de Y ações concluídas.\nAguardando demais.'"]:::endnode
+
+    VAL3{"⚠️ VALIDAÇÃO 3\nempty(Descricao_Solucao)\nna Lista 1 ?"}:::validation
+
+    EMAIL_VAL3["📧 E-mail de Alerta\nPara: Responsavel_Designado\nCorpo: 'Todas as ações concluídas!\nFalta preencher Descricao_Solucao\nna Lista de Incidentes.'"]:::email
+
+    CANCEL4["❌ Terminate — Cancelled\nMsg: 'Descricao_Solucao pendente'"]:::cancel
+
+    UPDATE["⚡ Atualizar Item — Lista 1\nID: varIdIncidente\nStatus_Incidente → 'Concluído'\nData_Encerramento → utcNow()\n⚠️ Manter outros campos via Get_Item"]:::success
+
+    EMAIL_FIM["📧 E-mail de Encerramento\nPara: Responsavel_Designado; Registrado_Por\nCC: lenon@empresa.com; bruna@empresa.com\nAssunto: ✅ INCIDENTE CONCLUÍDO – #ID Title\nCorpo: Resumo, Descricao_Solucao,\nTotal ações, Data_Encerramento, Link"]:::email
+
+    FIM["✅ Fluxo encerra com sucesso"]:::endnode
+
+    T --> TC
+    TC -->|"Status_Acao = Concluída"| V1
+    V1 --> G1 --> V2 --> GUARD
+
+    GUARD -- "SIM → já concluído" --> CANCEL1
+    GUARD -- "NÃO → continuar" --> VAL1
+
+    VAL1 -- "SIM → campo vazio" --> EMAIL_VAL1 --> CANCEL2
+    VAL1 -- "NÃO → preenchido" --> G2
+
+    G2 --> V3 --> FA --> FA2 --> VAL2
+
+    VAL2 -- "SIM → há ações\nsem resolução" --> CANCEL3
+    VAL2 -- "NÃO → todas com\nresolução" --> V4
+
+    V4 --> DECISION
+    DECISION -- "NÃO → ainda\nhá pendentes" --> PARCIAL
+    DECISION -- "SIM → todas\nconcluídas" --> VAL3
+
+    VAL3 -- "SIM → campo\nvazio" --> EMAIL_VAL3 --> CANCEL4
+    VAL3 -- "NÃO → preenchido" --> UPDATE --> EMAIL_FIM --> FIM

@@ -1,0 +1,79 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     FLUXO 2 — E-mail de Encaminhamento ao Responsável
+     Cole este HTML no corpo do "Send an email (V2)" do Power Automate
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div style="font-family: Segoe UI, Arial, sans-serif; max-width: 640px; margin: 0 auto; background: #f5f5f5; padding: 20px;">
+  
+  <!-- Header -->
+  <div style="background: #CA5010; border-radius: 8px 8px 0 0; padding: 20px 24px;">
+    <h1 style="color: #fff; font-size: 20px; margin: 0;">🎯 VOCÊ FOI DESIGNADO COMO RESPONSÁVEL</h1>
+    <p style="color: #ffd9b3; font-size: 13px; margin: 6px 0 0;">Incidente requer sua atenção e ação</p>
+  </div>
+
+  <!-- Body -->
+  <div style="background: #ffffff; padding: 24px; border: 1px solid #e1dfdd; border-top: none;">
+    
+    <p style="font-size: 14px; color: #323130;">Olá <strong>@{variables('varNomeResponsavel')}</strong>,</p>
+    <p style="font-size: 13px; color: #605e5c;">
+      A Direção designou você como responsável pelo incidente abaixo.<br>
+      Registre as ações corretivas necessárias na Lista de Ações Corretivas.
+    </p>
+
+    <!-- Tabela de detalhes -->
+    <table style="width: 100%; border-collapse: collapse; margin: 16px 0;" cellpadding="0" cellspacing="0">
+      <tr>
+        <td colspan="2" style="background: #004578; color: #fff; font-weight: bold; font-size: 13px; padding: 10px 12px; border-radius: 4px 4px 0 0;">
+          DADOS DO INCIDENTE
+        </td>
+      </tr>
+      <tr style="background: #f3f2f1;">
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; width: 140px; border: 1px solid #e1dfdd;">ID</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/ID']}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Título</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/Title']}</td>
+      </tr>
+      <tr style="background: #f3f2f1;">
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Área / Criticidade</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">
+          @{triggerOutputs()?['body/x00c1_rea_Afetada/Value']} — @{triggerOutputs()?['body/Criticidade/Value']}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 12px; font-weight: bold; color: #004578; font-size: 12px; border: 1px solid #e1dfdd;">Causa Raiz</td>
+        <td style="padding: 8px 12px; color: #323130; font-size: 12px; border: 1px solid #e1dfdd;">@{triggerOutputs()?['body/Causa_Raiz_Identificada']}</td>
+      </tr>
+    </table>
+
+    <!-- Two CTA Buttons -->
+    <div style="text-align: center; margin: 20px 0;">
+      <a href="@{variables('varLinkIncidente')}" 
+         style="display: inline-block; background: #0078D4; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 0 6px;">
+        📋&nbsp; Abrir Incidente (Lista 1)
+      </a>
+      <a href="@{variables('varLinkListaAcoes')}" 
+         style="display: inline-block; background: #107C10; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; font-size: 13px; margin: 0 6px;">
+        ✅&nbsp; Registrar Ações (Lista 2)
+      </a>
+    </div>
+
+    <!-- Steps -->
+    <p style="font-size: 13px; color: #323130;"><strong>📌 Seus próximos passos:</strong></p>
+    <table style="font-size: 12px; color: #605e5c; margin-top: 8px;" cellpadding="4">
+      <tr><td>1️⃣</td><td>Acesse a <strong>Lista 2</strong> e crie as ações corretivas vinculadas a este incidente</td></tr>
+      <tr><td>2️⃣</td><td>Atualize o <strong>Status</strong> e <strong>Percentual</strong> de cada ação conforme executa</td></tr>
+      <tr><td>3️⃣</td><td>Preencha o campo <strong>Resolução da Ação</strong> ao concluir cada uma</td></tr>
+      <tr><td>4️⃣</td><td>Preencha <strong>Descrição da Solução</strong> na Lista 1 (como o incidente foi resolvido)</td></tr>
+      <tr><td>5️⃣</td><td>O sistema concluirá automaticamente quando todas as ações estiverem prontas</td></tr>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding: 12px 24px; border-top: 1px solid #e1dfdd; background: #fafafa; border-radius: 0 0 8px 8px;">
+    <p style="font-size: 11px; color: #a19f9d; margin: 0;">
+      E-mail gerado automaticamente pelo Power Automate — Fluxo 2 (Encaminhamento ao Responsável)
+    </p>
+  </div>
+</div>
